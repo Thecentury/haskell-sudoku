@@ -1,6 +1,6 @@
 module Sudoku (printSolutions) where
 
-import Data.List (transpose)
+import Data.List (transpose, nub)
 
 type Grid = Matrix Value
 type Matrix a = [Row a]
@@ -122,16 +122,44 @@ choices = map (map choice) where
     choice c | c == '.'  =  ['1'..'9']
              | otherwise =  [c]
 
--- cartesian product
-cp :: [[a]] -> [[a]]
-cp [] = [[]]
-cp (xs : xss) = [y : ys | y <- xs, ys <- cp xss]
+cartesianProduct :: [[a]] -> [[a]]
+cartesianProduct [] = [[]]
+cartesianProduct (xs : xss) = [y : ys | y <- xs, ys <- cartesianProduct xss]
 
 -- todo convince yourself that it works
 collapse :: Matrix [a] -> [Matrix a]
-collapse m = cp (map cp m)
+collapse m = cartesianProduct (map cartesianProduct m)
+
+--------------------------------------------------------------------------------
+
+prune :: Matrix Choices -> Matrix Choices
+prune = pruneBy boxs . pruneBy cols . pruneBy rows where
+        pruneBy f = f . map reduce . f
+
+fix :: Eq a => (a -> a) -> a -> a
+fix f a =
+  let a' = f a in
+  if a == a' then
+    a
+  else
+    fix f a'
+
+-- reduce ["1234", "1", "34", "3"] -> ["24", "1", "3", "3"]
+reduce :: Row Choices -> Row Choices
+reduce = fix impl where
+  impl choices =
+    let
+      singleDigits = concat . nub . filter (\c -> length c == 1) $ choices
+      excludeSingleDigits c =
+        if length c == 1 then c
+        else filter (`notElem` singleDigits) c
+    in map excludeSingleDigits choices
+
+solve2 = filter valid . collapse . prune . choices
+
+------------------------------------------------------------------
 
 printSolutions :: IO ()
 printSolutions = do
-  let solutions = solve easy
+  let solutions = solve2 easy
   putStrLn $ "Solutions:" ++ show solutions
