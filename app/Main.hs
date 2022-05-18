@@ -1,7 +1,6 @@
 module Main (main) where
 
-import Sudoku (someFunc)
-
+import Sudoku (printSolutions)
 
 main :: IO ()
-main = someFunc
+main = printSolutions
