@@ -138,11 +138,11 @@ prune = pruneBy boxs . pruneBy cols . pruneBy rows where
 
 fix :: Eq a => (a -> a) -> a -> a
 fix f a =
-  let a' = f a in
   if a == a' then
     a
   else
     fix f a'
+  where a' = f a
 
 -- reduce ["1234", "1", "34", "3"] -> ["24", "1", "3", "3"]
 reduce :: Row Choices -> Row Choices
@@ -155,11 +155,14 @@ reduce = fix impl where
         else filter (`notElem` singleDigits) c
     in map excludeSingleDigits choices
 
+solve2 :: Grid -> [Grid]
 solve2 = filter valid . collapse . prune . choices
+
+solve3 = filter valid . collapse . fix prune . choices
 
 ------------------------------------------------------------------
 
 printSolutions :: IO ()
 printSolutions = do
-  let solutions = solve2 easy
+  let solutions = solve3 easy
   putStrLn $ "Solutions:" ++ show solutions
