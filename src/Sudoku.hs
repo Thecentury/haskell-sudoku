@@ -82,7 +82,7 @@ minimal               =  [".98......",
 --Empty grid:
 blank                 :: Grid
 blank                 =  replicate n (replicate n '.')
-                         where n = boxsize ^ 2
+                         where n = boxsize ^ (2 :: Int)
 
 --------------------------------------------------------------------------------
 
